@@ -1,5 +1,9 @@
 import datetime
+
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from starlette import status
+
 from db.models.sample import Sample
 from schemas.samples import CreateSample, UpdateSample
 
@@ -44,8 +48,9 @@ def list_by_project_id(project_id: int, status: bool, db: Session):
         samples = db.query(Sample).filter(Sample.project_id == project_id).all()
         return samples
 
+
 def get_by_id(id: int, db: Session):
-    samples = db.query(Sample).filter(Sample.id == id).all()
+    samples = db.query(Sample).filter(Sample.id == id).one_or_none()
     return samples
 
 
@@ -56,3 +61,17 @@ def delete_by_id(id: int, db: Session):
     existing_sample.delete(synchronize_session=False)
     db.commit()
     return 1
+
+
+def update_label(id: int, label: str, db: Session):
+    existing_sample = db.query(Sample).filter(Sample.id == id).one_or_none()
+    if existing_sample is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found sample with id is %s".format(id)
+        )
+    existing_sample.label = label
+    db.merge(existing_sample)
+    db.flush()
+    db.commit()
+    return existing_sample

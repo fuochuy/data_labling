@@ -33,7 +33,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
-@router.post("/role/grant")
+@router.put("/role/grant")
 def grant_role(user_id: int, role_name: str, db: Session = Depends(get_db),
                current_user: User = Depends(get_current_user_from_token)):
     role_current = get_role_by_name(current_user.role, db)
@@ -59,10 +59,11 @@ def grant_role(user_id: int, role_name: str, db: Session = Depends(get_db),
         detail="Permission denied.")
 
 
-@router.post("/role/revoke")
-def grant_role(user_id: int, role_name: str, db: Session = Depends(get_db),
+@router.put("/role/revoke")
+def grant_role(user_id: int, db: Session = Depends(get_db),
                current_user: User = Depends(get_current_user_from_token)):
     role_current = get_role_by_name(current_user.role, db)
+    role_name = ''
     if role_current.name == "ADMIN":
         user = update_role_repo(user_id=user_id, role_name=role_name, db=db)
         return user
@@ -85,13 +86,19 @@ def grant_role(user_id: int, role_name: str, db: Session = Depends(get_db),
         detail="Permission denied.")
 
 
-@router.post("/change-password")
+@router.put("/change-password")
 def change_password(password: str, db: Session = Depends(get_db),
                     current_user: User = Depends(get_current_user_from_token)):
     return change_password_repo(current_user.id, password, db)
 
 
-@router.post("/list")
+@router.get("/list")
 def change_password(db: Session = Depends(get_db),
                     ):
     return list_user(db)
+
+
+@router.get("/info")
+def change_password(
+        current_user: User = Depends(get_current_user_from_token)):
+    return current_user

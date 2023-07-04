@@ -70,14 +70,15 @@ def change_password_repo(id: int, password: str, db: Session):
         return 0
     if password is not None:
         existing_user.hashed_password = Hasher.get_password_hash(password)
-        existing_user.update()
+        db.merge(existing_user)
+        db.flush()
         db.commit()
-    return 1
+    return existing_user
 
 
 def update_role_repo(user_id: int, role_name: str, db: Session):
-    existing_user = db.query(User).filter(User.id == user_id).first()
-    if not existing_user:
+    existing_user = db.query(User).filter(User.id == user_id).one_or_none()
+    if existing_user is None:
         return 0
     role = db.query(Role).filter(Role.name == role_name).first()
     if role is None:
@@ -85,11 +86,23 @@ def update_role_repo(user_id: int, role_name: str, db: Session):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found role with name is %s".format(role_name)
         )
-    existing_user.role = role
-    existing_user.update()
+    user = User(
+        id=existing_user.id,
+        username=existing_user.username,
+        email=existing_user.email,
+        hashed_password=existing_user.hashed_password,
+        is_active=existing_user.is_active,
+        is_superuser=existing_user.is_superuser,
+        fullname=existing_user.fullname,
+        role=role_name,
+    )
+    user.__dict__.update(
+        id=existing_user.id
+    )
+    db.merge(user)
+    db.flush()
     db.commit()
-    return 1
-
+    return user
 
 def block_user_by_id(id: int, db: Session):
     existing_user = db.query(User).filter(User.id == id).first()

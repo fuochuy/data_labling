@@ -16,14 +16,14 @@ def create_new_project(project: ProjectCreate, username: str, db: Session):
             detail="Not found type with name is %s".format(project.projectType)
         )
     project = Project(
-        projectName = project.projectName,
-        projectType = type.name,
-        created_user = username,
-        created_date = datetime.datetime.utcnow,
-        updated_user = username,
-        updated_date = datetime.datetime.utcnow,
-        description = project.description,
-        status = project.status
+        projectName=project.projectName,
+        projectType=type.name,
+        created_user=username,
+        created_date=datetime.datetime.now(),
+        updated_user=username,
+        updated_date=datetime.datetime.now(),
+        description=project.description,
+        status=project.status
     )
     db.add(project)
     db.commit()
@@ -32,7 +32,7 @@ def create_new_project(project: ProjectCreate, username: str, db: Session):
 
 
 def get_project_by_created_user(created_user: str, db: Session):
-    projects = db.query(Project).filter(projects.created_user == created_user)
+    projects = db.query(Project).filter(Project.created_user == created_user)
     return projects
 
 
@@ -54,10 +54,11 @@ def update_project_by_id(id: int, username: str, project: ProjectUpdate, db: Ses
     if project.projectName is not None or project.description is not None or project.status is not None:
         existing_project.updated_user = username
         existing_project.updated_date = datetime.datetime.utcnow
-    
+
     existing_project.update()
     db.commit()
     return 1
+
 
 def delete_project_by_id(id: int, db: Session):
     existing_project = db.query(Project).filter(Project.projectId == id)
@@ -66,4 +67,3 @@ def delete_project_by_id(id: int, db: Session):
     existing_project.delete(synchronize_session=False)
     db.commit()
     return 1
-

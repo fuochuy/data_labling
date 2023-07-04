@@ -17,7 +17,7 @@ router = APIRouter()
 def create_project(project: ProjectCreate, db: Session = Depends(get_db),
                     current_user: User = Depends(get_current_user_from_token)   ):
     role_current = get_role_by_name(current_user.role, db)
-    if role_current.name == "ADMIN":
+    if role_current.name == "ADMIN" or role_current.name == "MANAGER":
         project = create_new_project(project=project, username=current_user.username, db=db)
         return project
     raise HTTPException(
@@ -29,7 +29,7 @@ def create_project(project: ProjectCreate, db: Session = Depends(get_db),
 def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db), 
                 current_user: User = Depends(get_current_user_from_token)):
     role_current = get_role_by_name(current_user.role, db)
-    if role_current.name == "ADMIN":
+    if role_current.name == "ADMIN" or role_current.name == "MANAGER":
         return update_project_by_id(id, username=current_user.username, project=project, db=db)
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -37,20 +37,14 @@ def update_project(id: int, project: ProjectUpdate, db: Session = Depends(get_db
     )
 
 @router.get("/")
-def list(db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_token)):
-    role_current = get_role_by_name(current_user.role, db)
-    if role_current.name == "ADMIN":
-        return list_project(db=db)
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Permission denied.",
-    )
+def list(db: Session = Depends(get_db)):
+    return list_project(db=db)
 
 @router.delete("/")
 def delete_type(id: int, db: Session = Depends(get_db),
                 current_user: User = Depends(get_current_user_from_token)):
     role_current = get_role_by_name(current_user.role, db)
-    if role_current.name == "ADMIN":
+    if role_current.name == "ADMIN" or role_current.name == "MANAGER":
         return delete_project_by_id(id, db=db)
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

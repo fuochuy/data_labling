@@ -7,7 +7,6 @@ from db.session import engine
 from db.utils import check_db_connected
 from db.utils import check_db_disconnected
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 
 def include_router(app):
     app.include_router(api_router)

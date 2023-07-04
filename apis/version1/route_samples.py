@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 router = APIRouter()
 
 
-@router.post("/", response_model=ShowSample)
+@router.post("/sample", response_model=ShowSample)
 def create(sample: CreateSample, db: Session = Depends(get_db)):
     sample = create_sample(sample=sample, db=db)
     return sample

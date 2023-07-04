@@ -15,5 +15,5 @@ class Sample(Base):
     status = Column(Boolean(), default=False, index=True)
     created_user = Column(Integer)
     updated_user = Column(Integer)
-    created_at = Column(datetime)
-    updated_at = Column(datetime)
+    created_at = Column(String)
+    updated_at = Column(String)

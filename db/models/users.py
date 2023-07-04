@@ -1,5 +1,5 @@
 from db.base_class import Base
-from sqlalchemy import Boolean, ForeignKey
+from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import String
@@ -12,5 +12,5 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
-    fullname = Column(String)
-    role = Column(String, nullable=False)
+    fullname = Column(String, nullable=False)
+    role = Column(String)

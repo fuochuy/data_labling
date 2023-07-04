@@ -17,6 +17,7 @@ def create_new_user(user: UserCreate, register: bool, db: Session):
             is_active=True,
             is_superuser=False,
             fullname=user.fullname,
+            role=''
         )
     else:
         role = db.query(Role).filter(Role.name == user.role).first()

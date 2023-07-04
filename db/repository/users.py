@@ -8,22 +8,32 @@ from schemas.users import UserCreate, UserUpdate
 from sqlalchemy.orm import Session
 
 
-def create_new_user(user: UserCreate, db: Session):
-    role = db.query(Role).filter(Role.name == user.role).first()
-    if role is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Not found role with name is %s".format(user.role)
+def create_new_user(user: UserCreate, register: bool, db: Session):
+    if register is True:
+        user = User(
+            username=user.username,
+            email=user.email,
+            hashed_password=Hasher.get_password_hash(user.password),
+            is_active=True,
+            is_superuser=False,
+            fullname=user.fullname,
         )
-    user = User(
-        username=user.username,
-        email=user.email,
-        hashed_password=Hasher.get_password_hash(user.password),
-        is_active=True,
-        is_superuser=False,
-        fullname=user.fullname,
-        role=role.name
-    )
+    else:
+        role = db.query(Role).filter(Role.name == user.role).first()
+        if role is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Not found role with name is %s".format(user.role)
+            )
+        user = User(
+            username=user.username,
+            email=user.email,
+            hashed_password=Hasher.get_password_hash(user.password),
+            is_active=True,
+            is_superuser=False,
+            fullname=user.fullname,
+            role=role.name
+        )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -48,12 +58,33 @@ def update_user_by_id(id: int, user: UserUpdate, db: Session):
         existing_user.fullname = user.fullname
     if user.email is not None:
         existing_user.email = user.email
-    if user.role is not None:
-        existing_role = db.query(Role).filter(Role.name == user.role).first()
-        if not existing_role:
-            return 0
-        else:
-            existing_user.role_id = existing_role.id
+    existing_user.update()
+    db.commit()
+    return 1
+
+
+def change_password_repo(id: int, password: str, db: Session):
+    existing_user = db.query(User).filter(User.id == id).first()
+    if not existing_user:
+        return 0
+    if password is not None:
+        existing_user.hashed_password = Hasher.get_password_hash(password)
+        existing_user.update()
+        db.commit()
+    return 1
+
+
+def update_role_repo(user_id: int, role_name: str, db: Session):
+    existing_user = db.query(User).filter(User.id == user_id).first()
+    if not existing_user:
+        return 0
+    role = db.query(Role).filter(Role.name == role_name).first()
+    if role is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found role with name is %s".format(role_name)
+        )
+    existing_user.role = role
     existing_user.update()
     db.commit()
     return 1

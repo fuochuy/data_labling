@@ -27,21 +27,28 @@ def create_role(role: RoleBase, db: Session = Depends(get_db),
 
 
 @router.put("/")
-def update_role(id: int, role: RoleBase, db: Session = Depends(get_db)):
-    return update_role_by_id(id, role=role, db=db)
-
-
-@router.delete("/")
-def delete_role(id: int, role: RoleBase, db: Session = Depends(get_db)):
-    return delete_role_by_id(id, role=role, db=db)
-
-
-@router.get("/")
-def list(db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_token)):
+def update_role(id: int, role: RoleBase, db: Session = Depends(get_db), current_user: User = Depends(get_current_user_from_token)):
     role_current = get_role_by_name(current_user.role, db)
     if role_current.name == "ADMIN":
-        return list_role(db=db)
+        return update_role_by_id(id, role=role, db=db)
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
         detail="Permission denied.",
     )
+
+
+@router.delete("/")
+def delete_role(id: int, db: Session = Depends(get_db),
+                current_user: User = Depends(get_current_user_from_token)):
+    role_current = get_role_by_name(current_user.role, db)
+    if role_current.name == "ADMIN":
+        return delete_role_by_id(id, db=db)
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Permission denied.",
+    )
+
+
+@router.get("/")
+def list(db: Session = Depends(get_db)):
+    return list_role(db=db)
